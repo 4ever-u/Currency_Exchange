@@ -20,7 +20,8 @@ def load_bronze(db_path, base_curr):
             query = ''' INSERT INTO raw_rates (fetch_date, base_currency, raw_json)
                 VALUES(?, ?, ?) '''
             cursor.execute(query, (str(date.today()), base_curr, json.dumps(data)))
-    return "Successfully loaded data into bronze raw_rates table."
+
+
 
 if __name__ == "__main__":
     load_dotenv()

@@ -62,7 +62,6 @@ def load_gold(aggregated_df, dim_currencies_df, dim_dates_df, db_path):
         dim_dates_to_write["date"] = dim_dates_to_write["date"].dt.strftime("%Y-%m-%d")
         dim_dates_to_write.to_sql("dim_dates", conn, if_exists="replace", index=False)
 
-    return "Successfully populated gold tables."
 
 
 if __name__ == "__main__":

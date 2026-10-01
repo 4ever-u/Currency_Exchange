@@ -41,8 +41,8 @@ def load_silver(df, db_path):
     with sqlite3.connect(db_path) as conn:
         df_to_write.to_sql("cleaned_rates", conn, if_exists="replace", index=False)
 
-    return "Successfully loaded data into silver cleaned_rates table."
 
+    
 if __name__ == "__main__":
     raw_df = extract_from_bronze(DB_PATH)
     cleaned_df = clean_rates(raw_df)

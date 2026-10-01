@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import time
+import schedule
 
 from load_bronze import load_bronze
 from transform_silver import extract_from_bronze, clean_rates, load_silver
@@ -29,5 +31,14 @@ def run_pipeline():
     print("Step 4/4: Pipeline complete.")
 
 
+def main():
+    schedule.every().day.at("08:00", "Asia/Tashkent").do(run_pipeline)
+    # schedule.every(10).seconds.do(run_pipeline)       # to test whether the scheduler is working fine or not.
+    print("Scheduler started. Next run:", schedule.next_run())
+    while True:
+        schedule.run_pending()
+        time.sleep(30)
+
+
 if __name__ == "__main__":
-    run_pipeline()
+    main()
