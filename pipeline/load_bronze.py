@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from extract import fetch_rates
 import json
 from datetime import date, timedelta
+import logging
+logger = logging.getLogger(__name__)
 
 
 def create_table(db_path, schema_path):
@@ -25,8 +27,18 @@ def load_bronze(db_path, base_curr):
     latest = get_latest_bronze_date(db_path)
     if latest:
         start = date.fromisoformat(latest) + timedelta(days=1)
+    else:
+        start = date.today() - timedelta(days=int(os.getenv("BACKFILL_DAYS")))
+
+    if start > date.today():
+        print(f"Bronze is up to date (latest: {latest}). Nothing to fetch.")
+        return 0
     
     content = fetch_rates(str(start))
+
+    if not content:
+        print(f"No new rates since {latest} (current date, weekend or holiday). Skipping.")
+        return 0
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
@@ -35,6 +47,8 @@ def load_bronze(db_path, base_curr):
                 VALUES(?, ?, ?) '''
             cursor.execute(query, (str(date.today()), base_curr, json.dumps(data)))
 
+    logger.info("Bronze: fetched %d records, wrote %d rows", len(content), len(content))
+    return len(content)
 
 
 if __name__ == "__main__":

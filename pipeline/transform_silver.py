@@ -3,6 +3,8 @@ import json
 import pandas as pd
 import os
 from dotenv import load_dotenv
+import logging
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 DB_PATH = os.getenv("DB_PATH")
@@ -27,8 +29,19 @@ def extract_from_bronze(db_path):
 
 
 def clean_rates(df):
+    total = len(df)
+    
     df = df.dropna()
-    df = df.drop_duplicates(subset=["date", "base_currency", "target_currency"])    
+    df = df.drop_duplicates(subset=["date", "base_currency", "target_currency"])
+
+    if df.empty:
+        raise ValueError("Silver validation failed: no valid rows")
+
+    dropped = total - len(df)
+
+    if dropped:
+        logger.warning(f"Dropped {dropped} of {total} rows (missing, invalid, or duplicate)")
+
     df['date'] = df['date'].astype("datetime64[us]")
     df['exchange_rate'] = df['exchange_rate'].astype("float64").round(2)
     df = df[df["exchange_rate"] > 0]
@@ -40,6 +53,9 @@ def load_silver(df, db_path):
 
     with sqlite3.connect(db_path) as conn:
         df_to_write.to_sql("cleaned_rates", conn, if_exists="replace", index=False)
+        
+    logger.info("Silver: wrote %d rows to cleaned_rates", len(df_to_write))
+    return len(df_to_write)
 
 
     

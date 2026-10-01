@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 DB_PATH = os.getenv("DB_PATH")
@@ -62,6 +64,11 @@ def load_gold(aggregated_df, dim_currencies_df, dim_dates_df, db_path):
         dim_dates_to_write["date"] = dim_dates_to_write["date"].dt.strftime("%Y-%m-%d")
         dim_dates_to_write.to_sql("dim_dates", conn, if_exists="replace", index=False)
 
+    logger.info(
+        "Gold: wrote %d aggregated_rates, %d dim_currencies, %d dim_dates rows",
+        len(aggregated_df), len(dim_currencies_df), len(dim_dates_df),
+    )
+    return len(aggregated_df)
 
 
 if __name__ == "__main__":

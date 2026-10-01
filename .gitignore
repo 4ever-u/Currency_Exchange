@@ -1,3 +1,4 @@
+.vscode
 .env
 __pycache__/
 *.pyc
@@ -6,3 +7,4 @@ venv/
 *.db
 *.sqlite
 .ipynb_checkpoints/
+*.log
